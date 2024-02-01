@@ -1,54 +1,73 @@
-// Attendez que le document soit prêt
-document.addEventListener('deviceready', onDeviceReady, false);
+// Attendez que le document soit chargé
+document.addEventListener('DOMContentLoaded', function () {
+    // Vérifiez si le navigateur prend en charge l'accès à la caméra
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Affichez un message à l'utilisateur pour demander l'autorisation
+        const permissionMessage = document.createElement('p');
+        permissionMessage.textContent = 'Ce site web souhaite accéder à la caméra pour scanner des codes-barres.';
+        document.body.appendChild(permissionMessage);
 
-function onDeviceReady() {
-    // Lorsque l'appareil est prêt, initialisez Quagga
-    Quagga.init({
-        inputStream: {
-            name: 'Live',
-            type: 'LiveStream',
-            target: document.querySelector('#interactive'), // Élément HTML pour afficher le flux vidéo
-        },
-        decoder: {
-            readers: ['ean_reader', 'ean_8_reader'], // Types de codes-barres à scanner (ajoutez d'autres types si nécessaire)
-        },
-    }, function (err) {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        // Démarrez la capture vidéo en direct lorsque Quagga est initialisé
-        Quagga.start();
-    });
+        // Ajoutez un bouton pour autoriser l'accès à la caméra
+        const allowCameraAccessButton = document.createElement('button');
+        allowCameraAccessButton.textContent = 'Autoriser l\'accès à la caméra';
+        document.body.appendChild(allowCameraAccessButton);
 
-    // Écoutez l'événement de détection de code-barres
-    Quagga.onDetected(function (result) {
-        const code = result.codeResult.code; // Code-barres détecté
+        // Lorsque l'utilisateur clique sur le bouton pour autoriser l'accès
+        allowCameraAccessButton.addEventListener('click', function () {
+            // Demandez la permission d'accéder à la caméra
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    // L'utilisateur a donné l'autorisation
+                    // Vous pouvez maintenant activer le scanner de code-barres
+                    activateBarcodeScanner(stream);
+                })
+                .catch(function (error) {
+                    // L'utilisateur a refusé l'autorisation ou une erreur s'est produite
+                    console.error('Erreur d\'accès à la caméra :', error);
+                });
+        });
+    } else {
+        console.error('Accès à la caméra non pris en charge par ce navigateur.');
+    }
 
-        // Affichez le code-barres détecté sur l'écran
-        displayBarcode(code);
+    // Fonction pour activer le scanner de code-barres
+    function activateBarcodeScanner(stream) {
+        // Supprimez le message et le bouton de demande d'autorisation
+        const permissionMessage = document.querySelector('p');
+        const allowCameraAccessButton = document.querySelector('button');
+        permissionMessage.remove();
+        allowCameraAccessButton.remove();
 
-        // Arrêtez la capture vidéo après la détection d'un code-barres
-        Quagga.stop();
-    });
+        // Configurez QuaggaJS pour le scanner de code-barres
+        Quagga.init({
+            inputStream: {
+                name: 'Live',
+                type: 'LiveStream',
+                target: document.querySelector('#interactive'), // Élément HTML pour afficher le flux vidéo de la caméra
+            },
+            decoder: {
+                readers: ['ean_reader', 'ean_8_reader'], // Types de codes-barres à scanner (ajoutez d'autres types si nécessaire)
+            },
+        }, function (err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            // Démarrez la capture vidéo en direct lorsque Quagga est initialisé
+            Quagga.start();
+        });
 
-    // Écoutez l'événement du bouton "Redémarrer"
-    document.querySelector('#restartBtn').addEventListener('click', function () {
-        // Redémarrez la capture vidéo en direct
-        Quagga.start();
-        // Effacez le code-barres précédent de l'écran
-        clearBarcode();
-    });
-}
+        // Écoutez l'événement de détection de code-barres
+        Quagga.onDetected(function (result) {
+            const code = result.codeResult.code; // Code-barres détecté
 
-// Fonction pour afficher le code-barres détecté
-function displayBarcode(code) {
-    const barcodeDiv = document.querySelector('#barcodeValue');
-    barcodeDiv.textContent = 'Code-barres détecté : ' + code;
-}
+            // Affichez le code-barres détecté sur la page web
+            const barcodeResultElement = document.createElement('p');
+            barcodeResultElement.textContent = 'Code-barres scanné : ' + code;
+            document.body.appendChild(barcodeResultElement);
 
-// Fonction pour effacer le code-barres affiché
-function clearBarcode() {
-    const barcodeDiv = document.querySelector('#barcodeValue');
-    barcodeDiv.textContent = '';
-}
+            // Arrêtez la capture vidéo après la détection d'un code-barres
+            Quagga.stop();
+        });
+    }
+});
