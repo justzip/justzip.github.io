@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scanner de Code-Barres</title>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
 </head>
 
 <body>
@@ -19,23 +20,24 @@
                 // Demander la permission d'accéder à la caméra
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(function (stream) {
-                        // Afficher le flux vidéo de la caméra (facultatif)
-                        const videoElement = document.createElement("video");
-                        videoElement.srcObject = stream;
-                        videoElement.style.width = "100%";
-                        videoElement.style.maxWidth = "640px";
-                        document.body.appendChild(videoElement);
-
                         // Configuration de QuaggaJS
                         Quagga.init({
                             inputStream: {
-                                name: "Live",
-                                type: "LiveStream",
-                                target: videoElement
+                                constraints: {
+                                    width: 640,
+                                    height: 480,
+                                    facingMode: "environment" // Utilisation de la caméra arrière (facultatif)
+                                }
                             },
+                            locator: {
+                                patchSize: "medium",
+                                halfSample: true
+                            },
+                            numOfWorkers: 4,
                             decoder: {
                                 readers: ["ean_reader"] // Type de code-barres à scanner (EAN-13)
-                            }
+                            },
+                            locate: true
                         }, function (err) {
                             if (err) {
                                 console.error(err);
@@ -52,6 +54,9 @@
 
                             // Afficher le code-barres détecté sur la page
                             resultElement.textContent = "Code-barres scanné : " + code;
+
+                            // Arrêter la capture vidéo après la détection du code-barres (facultatif)
+                            Quagga.stop();
                         });
                     })
                     .catch(function (error) {
@@ -63,9 +68,6 @@
             }
         });
     </script>
-
-    <!-- Inclure QuaggaJS (à ajouter à votre projet) -->
-    <script src="chemin/vers/quagga.min.js"></script>
 </body>
 
 </html>
