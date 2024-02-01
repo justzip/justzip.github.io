@@ -1,0 +1,52 @@
+/* styles.css */
+
+/* Style pour le corps de la page */
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+/* Style pour le conteneur principal */
+.main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Style pour les formulaires */
+.form-floating {
+    position: relative;
+}
+
+/* Style pour le bouton "Generate" */
+#generateBtn {
+    margin-left: 10px;
+}
+
+/* Style pour le champ de saisie du code-barres */
+#barcode {
+    width: 100%;
+}
+
+/* Style pour le résultat du code-barres */
+#barcodeOut {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Style pour les contrôles désactivés */
+#controlFields:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Style pour le logo Bootstrap */
+img.bootstrap-logo {
+    width: 24px;
+    height: auto;
+    vertical-align: middle;
+    margin-right: 5px;
+}
